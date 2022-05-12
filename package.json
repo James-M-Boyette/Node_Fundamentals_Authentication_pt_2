@@ -1,0 +1,32 @@
+{
+  "name": "node_fundamentals_authentication",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "devJ": "nodemon ./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sou7hernsaint/Node_Fundamentals_Authentication.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sou7hernsaint/Node_Fundamentals_Authentication/issues"
+  },
+  "homepage": "https://github.com/sou7hernsaint/Node_Fundamentals_Authentication#readme",
+  "dependencies": {
+    "@fastify/cookie": "^6.0.0",
+    "@fastify/static": "^5.0.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.0.1",
+    "fastify": "^3.29.0",
+    "fastify-cookie": "^5.7.0",
+    "fastify-static": "^4.7.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^4.6.0"
+  }
+}
