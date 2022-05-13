@@ -85,9 +85,23 @@ async function startApp(){
 
                     // Set cookies
 
-                    // 
-            } catch (e) {
-                console.error(e)
+                    if (userId) {
+                        await logUserIn(userId, request, reply)
+                        reply.send({
+                            data: {
+                                status: "SUCCESS!",
+                                userId,
+                            }
+                        })
+                    }
+                } catch (e) {
+                    console.error(e)
+                    reply.send({
+                        data: {
+                            status: "FAILED",
+                            userId,
+                        }
+                    })
             }
             reply.send({
                 data: "Hello World!"
@@ -105,14 +119,26 @@ async function startApp(){
                 if (isAuthorized) {
                     await logUserIn(userId, request, reply)
                     reply.send({
-                        data: "User logged in succesfully!"
+                        data: {
+                            status: "SUCCESS! User logged in succesfully!",
+                            userId,
+                        }
                     })
                 }
                 reply.send({
-                    data: "Authentication failed ..."
+                    data: {
+                        status: "Authentication failed ...", 
+                        userId,
+                    }
                 })
             } catch (e) {
                 console.error(e)
+                reply.send({
+                    data: {
+                        status: "FAILED",
+                        userId,
+                    }
+                })
             }
         })
 
@@ -121,16 +147,24 @@ async function startApp(){
             try {
                 await logUserOut(request, reply)
                 reply.send({
-                    data: "User logged out",
+                    data: {
+                        status: "User logged out",
+                    }
                 })
             } catch (e) {
                 console.error(e)
+                reply.send({
+                    data: {
+                        status: "FAILED",
+                        userId,
+                    }
+                })
             }
         })
         
         // "Start Server"
-        await app.listen(port)
-        console.log(`🚀 Server Listening at port: ${port}`)
+        await app.listen(port);
+        console.log(`🚀 Server Listening at port: ${port}`);
         
     } catch (e) {
         console.error(e)

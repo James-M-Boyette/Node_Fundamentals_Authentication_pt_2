@@ -10,12 +10,18 @@ export async function authorizeUser( email, password ) {
     const userData = await user.findOne({
         'email.address': email,
     });
-    console.log('userData', userData)
-    // "Get *stored* pw"
-    const savedPassword = userData.password
-    // "Compare *user-supplied* pw with stored pw"
-    const isAuthorized = await compare(password, savedPassword)
-    console.log("isAuthorized", isAuthorized)
-    // "Return boolean of 'if' for pw"
-    return { isAuthorized, userId: userData._id }
+    if(userData) {
+        console.log('userData', userData)
+        // "Get *stored* pw"
+        const savedPassword = userData.password
+        // "Compare *user-supplied* pw with stored pw"
+        const isAuthorized = await compare(password, savedPassword)
+        console.log("isAuthorized", isAuthorized)
+        // "Return boolean of 'if' for pw"
+        return { isAuthorized, userId: userData._id }
+    } else {
+        console.log('email & pw:', email, password)
+        console.log("User does not exist ...")
+        return ''
+    }
 }
