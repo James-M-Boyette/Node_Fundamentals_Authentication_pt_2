@@ -36,7 +36,10 @@ import { getUserFromCookies } from "./accounts/user.js";
 // Testing Email
 import { sendEmail, mailInit } from "./mail/index.js";
 
-import { createVerifyEmailLink } from "./accounts/verify.js";
+import {
+	createVerifyEmailLink,
+	validateVerifyEmail,
+} from "./accounts/verify.js";
 
 // "Constants / Middleware"
 // "ESM-specific syntax requirements for accessing static files"
@@ -192,23 +195,19 @@ async function startApp() {
 			}
 		});
 
-		// "verify"
+		// "Verify email"
 		app.post("/api/verify", {}, async (request, reply) => {
 			try {
 				const { token, email } = request.body;
 				console.log("token, email @ api", token, email);
-				reply.send({
-					data: {
-						status: "User verified!",
-					},
-				});
+				const isValid = await validateVerifyEmail(token, email);
+				if (isValid) {
+					return reply.code(200).send();
+				}
+				return reply.code(401).send(); // 401 = unauthorized
 			} catch (e) {
-				console.error(e);
-				reply.send({
-					data: {
-						status: "FAILED",
-					},
-				});
+				console.log("Error:", e);
+				return reply.code(401).send(); // 401 = unauthorized
 			}
 		});
 

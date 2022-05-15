@@ -55,15 +55,13 @@ async function startApp() {
 						"Content-type": "application/json; charset = UTF-8",
 					},
 				});
-				console.log("response:", res);
-				reply.code(200).send("Everything's working!");
+				if (res.status === 200) {
+					return reply.redirect("/");
+				}
+				reply.code(401).send();
 			} catch (e) {
 				console.log("Error:", e);
-				reply.send({
-					data: {
-						status: "FAILED",
-					},
-				});
+				reply.code(401).send();
 			}
 		});
 
