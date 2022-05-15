@@ -15,6 +15,9 @@ import { fileURLToPath } from "url";
 // import fastifyCookie from 'fastify-cookie';
 import fastifyCookie from '@fastify/cookie';
 
+// "CORS"
+import fastifyCors from '@fastify/cors';
+
 // "Salted user credentials"
 import { registerUser } from "./accounts/register.js"; 
 
@@ -35,6 +38,9 @@ import { getUserFromCookies } from './accounts/user.js';
 const __filename = fileURLToPath(import.meta.url) // get metadata about files
 const __dirname = path.dirname(__filename)
 
+// Testing Email
+import { sendEmail, mailInit } from "./mail/index.js";
+
 // "Constants / Middleware"
 const app = fastify();
 const port = 3000;
@@ -44,6 +50,21 @@ const port = 3000;
 
 async function startApp(){
     try {
+        // const transporter = await mailInit()
+        await mailInit()
+        // await sendEmail(transporter)
+        await sendEmail({
+            subject: "New Function",
+            html: "<h2> NEW HTML from me </h2>"
+        })
+
+        app.register(fastifyCors, {
+            origin: [
+                /\.nodeauth.dev/, "https://nodeauth.dev", 
+            ],
+            credentials: true,
+        })
+
         app.register(fastifyCookie, {
             // Import Cookie signature
             secret: process.env.COOKIE_SIGNATURE,

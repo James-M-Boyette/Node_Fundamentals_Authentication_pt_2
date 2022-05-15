@@ -5,14 +5,10 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Document</title>
-		<style>
-			body {
-				background-color: lightgreen;
-			}
-		</style>
+		<style></style>
 	</head>
 	<body>
-		<h1>Hello - I'm your index.html page (from public)</h1>
+		<h1>Hello - I'm your index.html page (from ui server)</h1>
 
 		<br />
 		<br />
@@ -47,9 +43,13 @@
 			// Log-out
 			async function logout() {
 				try {
-					const res = await fetch("/api/logout", {
-						method: "POST",
-					});
+					const res = await fetch(
+						"https://api.nodeauth.dev/api/logout",
+						{
+							method: "POST",
+							credentials: "include", // Added from video comments - maybe remove
+						}
+					);
 				} catch (e) {
 					console.error(e);
 				}
@@ -75,14 +75,18 @@
 							{}
 						);
 						// Submit form
-						const res = await fetch("/api/register", {
-							method: "POST",
-							body: JSON.stringify(values),
-							headers: {
-								"Content-type":
-									"application/json; charset = UTF-8",
-							},
-						});
+						const res = await fetch(
+							"https://api.nodeauth.dev/api/register",
+							{
+								method: "POST",
+								body: JSON.stringify(values),
+								credentials: "include",
+								headers: {
+									"Content-type":
+										"application/json; charset = UTF-8",
+								},
+							}
+						);
 					} catch (e) {
 						console.error(e);
 					}
@@ -105,14 +109,18 @@
 							{}
 						);
 						// Submit form
-						const res = await fetch("/api/authorize", {
-							method: "POST",
-							body: JSON.stringify(values),
-							headers: {
-								"Content-type":
-									"application/json; charset = UTF-8",
-							},
-						});
+						const res = await fetch(
+							"https://api.nodeauth.dev/api/authorize",
+							{
+								method: "POST",
+								body: JSON.stringify(values),
+								credentials: "include",
+								headers: {
+									"Content-type":
+										"application/json; charset = UTF-8",
+								},
+							}
+						);
 					} catch (e) {
 						console.error(e);
 					}

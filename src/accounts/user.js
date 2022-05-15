@@ -7,6 +7,9 @@ import { createTokens } from './tokens.js'
 // Import JWT signature
 const JWTSignature = process.env.JWT_SIGNATURE
 
+// Safari fix ("Cookies in Safari")
+const { ROOT_DOMAIN } = process.env
+
 // "Get access & refresh tokens"
 export async function getUserFromCookies(request, reply) {
     try {
@@ -75,12 +78,12 @@ export async function refreshTokens(sessionToken, userId, reply) {
         // "Set Cookies"
         reply.setCookie('refreshToken', refreshToken, {
             path: "/",
-            domain: "localhost",
+            domain: ROOT_DOMAIN,
             httpOnly: true,
             expires: refreshExpires,
         }).setCookie('accessToken', accessToken, {
             path: "/",
-            domain: "localhost",
+            domain: ROOT_DOMAIN,
             httpOnly: true,
         })
     } catch (e) {
