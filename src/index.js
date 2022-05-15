@@ -1,5 +1,5 @@
 // "Enivronment Variables"
-import "./env.js" // "Loads & runs file immediately"; clarify later
+import "./env.js"; // "Loads & runs file immediately"; clarify later
 
 // "Server Library"
 import { fastify } from "fastify";
@@ -22,7 +22,7 @@ import fastifyCors from '@fastify/cors';
 import { registerUser } from "./accounts/register.js"; 
 
 // "Database connection"
-import { connectDB } from "./db.js"
+import { connectDB } from "./db.js";
 
 // "Verify User Credentials"
 import { authorizeUser } from "./accounts/authorize.js";
@@ -35,11 +35,13 @@ import { getUserFromCookies } from './accounts/user.js';
 
 
 // "ESM-specific syntax requirements for accessing static files"
-const __filename = fileURLToPath(import.meta.url) // get metadata about files
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url); // get metadata about files
+const __dirname = path.dirname(__filename);
 
 // Testing Email
 import { sendEmail, mailInit } from "./mail/index.js";
+
+import { createVerifyEmailLink } from "./accounts/verify.js";
 
 // "Constants / Middleware"
 const app = fastify();
@@ -52,11 +54,7 @@ async function startApp(){
     try {
         // const transporter = await mailInit()
         await mailInit()
-        // await sendEmail(transporter)
-        await sendEmail({
-            subject: "New Function",
-            html: "<h2> NEW HTML from me </h2>"
-        })
+        
 
         app.register(fastifyCors, {
             origin: [
@@ -104,9 +102,18 @@ async function startApp(){
                     );
                     // Generate auth tokens
 
+                    // "If account creation was succesful ..."
                     // Set cookies
-
                     if (userId) {
+                        const emailLink = await createVerifyEmailLink(request.body.email);
+
+                        // await sendEmail(transporter)
+                        await sendEmail({
+                            to: request.body.email,
+                            subject: "Please Verify Your Email 😉",
+                            html: `<h2> Please <a href="${emailLink}">verify</a> your email</h2>`
+                        })
+
                         await logUserIn(userId, request, reply)
                         reply.send({
                             data: {

@@ -19,8 +19,8 @@ export async function mailInit() {
 
 // export async function sendEmail(transporter) {
 export async function sendEmail({
-    from = '"jboy@jboy.com', 
-    to = "jboy@jboy.com", 
+    from = 'inquiries@james-boyette.com', 
+    to = "inquiries@james-boyette.com", 
     subject,
     html,
 }) {
