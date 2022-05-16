@@ -31,7 +31,7 @@ import { authorizeUser } from "./accounts/authorize.js";
 import { logUserIn } from "./accounts/logUserIn.js";
 import { logUserOut } from "./accounts/logUserOut.js";
 
-import { getUserFromCookies } from "./accounts/user.js";
+import { getUserFromCookies, changePassword } from "./accounts/user.js";
 
 // Testing Email
 import { sendEmail, mailInit } from "./mail/index.js";
@@ -151,19 +151,31 @@ async function startApp() {
 
 				if (isAuthorized) {
 					await logUserIn(userId, request, reply);
-					reply.send({
+					return reply.code(200).send({
 						data: {
 							status: "SUCCESS! User logged in succesfully!",
 							userId,
 						},
 					});
+					// reply.send({
+					// 	data: {
+					// 		status: "SUCCESS! User logged in succesfully!",
+					// 		userId,
+					// 	},
+					// });
 				}
-				reply.send({
+				return reply.code(401).send({
 					data: {
 						status: "Authentication failed ...",
 						userId,
 					},
 				});
+				// reply.send({
+				// 	data: {
+				// 		status: "Authentication failed ...",
+				// 		userId,
+				// 	},
+				// });
 			} catch (e) {
 				console.error(e);
 				reply.send({
@@ -178,6 +190,7 @@ async function startApp() {
 		// "Logout"
 		app.post("/api/logout", {}, async (request, reply) => {
 			try {
+				console.log("attempting logUserOut()");
 				await logUserOut(request, reply);
 				reply.send({
 					data: {
@@ -208,6 +221,44 @@ async function startApp() {
 			} catch (e) {
 				console.log("Error:", e);
 				return reply.code(401).send(); // 401 = unauthorized
+			}
+		});
+
+		app.post("/api/change-password", {}, async (request, reply) => {
+			try {
+				// const {['old-pass']}
+				console.log("Change PW REQUEST: ", request);
+				// "Verify User Logged-in"
+				const user = await getUserFromCookies(request, reply);
+				console.log("Cookie User:", user);
+				if (user?.email?.address) {
+					// "Compare currently-logged-in user to re-auth"
+					const { isAuthorized, userId } = await authorizeUser(
+						user.email.address,
+						request.body["old-password"]
+					);
+					const newPassword = request.body["new-password"];
+					console.log(
+						"Change PW REQUEST - email & old PW:",
+						user.email.address,
+						request.body["old-password"]
+					);
+					console.log(
+						"Change PW isAuthorized & userId results ...",
+						isAuthorized,
+						userId
+					);
+					// "If user is who they say they are ..."
+					if (isAuthorized) {
+						// "Update pw in database"
+						await changePassword(userId, newPassword);
+					}
+					return reply.code(200).send("All Good");
+				}
+				return reply.code(401).send();
+			} catch (e) {
+				console.error(e);
+				return reply.code(401).send(); // We want to send back minimal info to potential hackers
 			}
 		});
 

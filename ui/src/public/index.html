@@ -37,6 +37,22 @@
 		<hr />
 		<br />
 
+		<h3>Change Password</h3>
+		<form id="change-form">
+			<label for="oldPassword">Old Password</label>
+			<input type="password" name="old-password" />
+			<br />
+			<label for="newPassword">New Password</label>
+			<input type="password" name="new-password" />
+			<br />
+			<button type="submit">Change Password</button>
+		</form>
+
+		<br />
+		<br />
+		<hr />
+		<br />
+
 		<button onclick="logout()">Log-out</button>
 
 		<script>
@@ -74,6 +90,7 @@
 							},
 							{}
 						);
+						console.log("Registration attempted from the UI");
 						// Submit form
 						const res = await fetch(
 							"https://api.nodeauth.dev/api/register",
@@ -108,9 +125,46 @@
 							},
 							{}
 						);
+						console.log("Log-in attempted from the UI");
 						// Submit form
 						const res = await fetch(
 							"https://api.nodeauth.dev/api/authorize",
+							{
+								method: "POST",
+								body: JSON.stringify(values),
+								credentials: "include",
+								headers: {
+									"Content-type":
+										"application/json; charset = UTF-8",
+								},
+							}
+						);
+					} catch (e) {
+						console.error(e);
+					}
+				});
+
+				// Find 'Change Password form' element
+				const changeForm = document.getElementById("change-form");
+				// Wait for event
+				changeForm.addEventListener("submit", async (e) => {
+					e.preventDefault();
+					try {
+						// Grab all values from change-form (if the form field has a name) and return an object
+						const values = Object.values(changeForm).reduce(
+							(obj, field) => {
+								if (field.name) {
+									obj[field.name] = field.value;
+								}
+								return obj;
+							},
+							{}
+						);
+						console.log("Change-PW attempted from the UI");
+						console.log("User-supplied old & new pws:", values);
+						// Submit form
+						const res = await fetch(
+							"https://api.nodeauth.dev/api/change-password",
 							{
 								method: "POST",
 								body: JSON.stringify(values),
