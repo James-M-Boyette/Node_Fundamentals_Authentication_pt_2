@@ -41,7 +41,7 @@ import {
 	validateVerifyEmail,
 } from "./accounts/verify.js";
 
-import { createResetLink } from "./accounts/reset.js";
+import { createResetLink, validateResetEmail } from "./accounts/reset.js";
 
 // "Constants / Middleware"
 // "ESM-specific syntax requirements for accessing static files"
@@ -264,7 +264,7 @@ async function startApp() {
 			}
 		});
 
-		// "Reset Password email"
+		// "Reset Password - verify & send email"
 		app.post("/api/forgot-password", {}, async (request, reply) => {
 			try {
 				const { email } = request.body;
@@ -283,6 +283,53 @@ async function startApp() {
 				}
 
 				return reply.code(200).send(); // apparently a security concern is a bot hitting this route to find out whether users exist or not ... so we want to send this message no matter what
+			} catch (e) {
+				console.log("Error:", e);
+				return reply.code(401).send(); // 401 = unauthorized
+			}
+		});
+
+		// "Reset Password - save to Database"
+		app.post("/api/reset", {}, async (request, reply) => {
+			try {
+				const { email, password, token, time } = request.body;
+				console.log(
+					"Reset PW save to DB @ api ...",
+					"email:",
+					email,
+					"pw:",
+					password,
+					"token:",
+					token,
+					"time:",
+					time
+				);
+				const isValid = await validateResetEmail(token, email, time);
+				// "Check to see if user exists - if "yes" ..."
+				if (isValid) {
+					const { user } = await import("./user/user.js");
+					const foundUser = await user.findOne({
+						"email.address": email,
+					});
+					console.log("if is valid, foundUser", foundUser, password);
+					if (foundUser._id) {
+						await changePassword(foundUser._id, password);
+						return reply
+							.code(200)
+							.send("Password succesfully updated!");
+					}
+				}
+				// "Create hash of new password"
+				// "Update DB with new password"
+
+				// const valid = await validateResetEmail(
+				// 	token,
+				// 	email,
+				// 	expirationTimestamp
+				// );
+				// console.log(valid);
+
+				return reply.code(400).send("Reset failed ..."); // apparently a security concern is a bot hitting this route to find out whether users exist or not ... so we want to send this message no matter what
 			} catch (e) {
 				console.log("Error:", e);
 				return reply.code(401).send(); // 401 = unauthorized

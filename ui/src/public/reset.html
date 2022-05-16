@@ -44,7 +44,7 @@
 			const resetForm = document.getElementById("reset-password-form");
 			// Wait for event; Note: different way of doing the same thing (calling 'reset' rather than having it be an in-line function)
 			resetForm.addEventListener("submit", reset);
-			function reset(event) {
+			async function reset(event) {
 				event.preventDefault();
 				try {
 					// Grab parameters from url (by creating new array with only the last three params)
@@ -52,8 +52,7 @@
 						.split("/")
 						.slice(-3);
 					console.log("email, time, token;", email, time, token);
-					console.log(",");
-					console.log(decodeURIComponent(email));
+					console.log("email decoded:", decodeURIComponent(email));
 					const formValues = getFormValues(resetForm);
 					console.log("formValues:", formValues);
 					const values = {
@@ -63,20 +62,20 @@
 						token,
 					};
 					console.log("values:", values); // Check these in browser console
-					console.log("Registration attempted from the UI");
+					console.log("Password Reset attempted from the UI");
 					// Submit form
-					// const res = await fetch(
-					// 	"https://api.nodeauth.dev/api/reset",
-					// 	{
-					// 		method: "POST",
-					// 		body: JSON.stringify(values),
-					// 		credentials: "include",
-					// 		headers: {
-					// 			"Content-type":
-					// 				"application/json; charset = UTF-8",
-					// 		},
-					// 	}
-					// );
+					const res = await fetch(
+						"https://api.nodeauth.dev/api/reset",
+						{
+							method: "POST",
+							body: JSON.stringify(values),
+							credentials: "include",
+							headers: {
+								"Content-type":
+									"application/json; charset = UTF-8",
+							},
+						}
+					);
 				} catch (e) {
 					console.error(e);
 				}
