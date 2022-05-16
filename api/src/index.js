@@ -41,6 +41,8 @@ import {
 	validateVerifyEmail,
 } from "./accounts/verify.js";
 
+import { createResetLink } from "./accounts/reset.js";
+
 // "Constants / Middleware"
 // "ESM-specific syntax requirements for accessing static files"
 const __filename = fileURLToPath(import.meta.url); // get metadata about files
@@ -212,7 +214,7 @@ async function startApp() {
 		app.post("/api/verify", {}, async (request, reply) => {
 			try {
 				const { token, email } = request.body;
-				console.log("token, email @ api", token, email);
+				console.log("Verify token, email @ api", token, email);
 				const isValid = await validateVerifyEmail(token, email);
 				if (isValid) {
 					return reply.code(200).send();
@@ -259,6 +261,31 @@ async function startApp() {
 			} catch (e) {
 				console.error(e);
 				return reply.code(401).send(); // We want to send back minimal info to potential hackers
+			}
+		});
+
+		// "Reset Password email"
+		app.post("/api/forgot-password", {}, async (request, reply) => {
+			try {
+				const { email } = request.body;
+				console.log("Reset PW email @ api", email);
+				// "Check whether a user with this email exists in DB"
+				const link = await createResetLink(email);
+				// "If they do, return a 'reset pw' link"
+				if (link) {
+					// "...send an email (to the saved email) with the 'reset pw' link"
+					// await sendEmail(transporter)
+					await sendEmail({
+						to: email,
+						subject: "Please Reset Your Password 😉",
+						html: `<h2> Please <a href="${link}">reset</a> your password</h2>`,
+					});
+				}
+
+				return reply.code(200).send(); // apparently a security concern is a bot hitting this route to find out whether users exist or not ... so we want to send this message no matter what
+			} catch (e) {
+				console.log("Error:", e);
+				return reply.code(401).send(); // 401 = unauthorized
 			}
 		});
 

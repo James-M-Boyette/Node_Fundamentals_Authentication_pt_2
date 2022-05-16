@@ -53,9 +53,33 @@
 		<hr />
 		<br />
 
+		<h3>Forgot Password</h3>
+		<form id="forgot-password-form">
+			<label for="email"
+				>E-mail
+				<input type="email" name="email" />
+			</label>
+			<button type="submit">Send 'Forgot' Email</button>
+		</form>
+
+		<br />
+		<br />
+		<hr />
+		<br />
+
 		<button onclick="logout()">Log-out</button>
 
 		<script>
+			function getFormValues(form) {
+				// Grab all values from change-form (if the form field has a name) and return an object
+				return Object.values(form).reduce((obj, field) => {
+					if (field.name) {
+						obj[field.name] = field.value;
+					}
+					return obj;
+				}, {});
+			}
+
 			// Log-out
 			async function logout() {
 				try {
@@ -71,9 +95,9 @@
 				}
 			}
 
-			// Find 'register form' element
 			(() => {
 				// Note: Above '(() => {' is called an "Iffy"
+				// Find 'register form' element
 				const registerForm =
 					document.getElementById("registration-form");
 				// Wait for event
@@ -81,15 +105,7 @@
 					e.preventDefault();
 					try {
 						// Grab all values from form (if the form field has a name) and return an object
-						const values = Object.values(registerForm).reduce(
-							(obj, field) => {
-								if (field.name) {
-									obj[field.name] = field.value;
-								}
-								return obj;
-							},
-							{}
-						);
+						const values = getFormValues(registerForm);
 						console.log("Registration attempted from the UI");
 						// Submit form
 						const res = await fetch(
@@ -116,15 +132,7 @@
 					e.preventDefault();
 					try {
 						// Grab all values from login-form (if the form field has a name) and return an object
-						const values = Object.values(loginForm).reduce(
-							(obj, field) => {
-								if (field.name) {
-									obj[field.name] = field.value;
-								}
-								return obj;
-							},
-							{}
-						);
+						const values = getFormValues(loginForm);
 						console.log("Log-in attempted from the UI");
 						// Submit form
 						const res = await fetch(
@@ -151,20 +159,42 @@
 					e.preventDefault();
 					try {
 						// Grab all values from change-form (if the form field has a name) and return an object
-						const values = Object.values(changeForm).reduce(
-							(obj, field) => {
-								if (field.name) {
-									obj[field.name] = field.value;
-								}
-								return obj;
-							},
-							{}
-						);
+						const values = getFormValues(changeForm);
 						console.log("Change-PW attempted from the UI");
 						console.log("User-supplied old & new pws:", values);
 						// Submit form
 						const res = await fetch(
 							"https://api.nodeauth.dev/api/change-password",
+							{
+								method: "POST",
+								body: JSON.stringify(values),
+								credentials: "include",
+								headers: {
+									"Content-type":
+										"application/json; charset = UTF-8",
+								},
+							}
+						);
+					} catch (e) {
+						console.error(e);
+					}
+				});
+
+				// Find 'Forgot Password form' element
+				const forgotPasswordForm = document.getElementById(
+					"forgot-password-form"
+				);
+				// Wait for event
+				forgotPasswordForm.addEventListener("submit", async (e) => {
+					e.preventDefault();
+					try {
+						// Grab all values from change-form (if the form field has a name) and return an object
+						const values = getFormValues(forgotPasswordForm);
+						console.log("Forgot-PW attempted from the UI");
+						console.log("User-supplied old & new pws:", values);
+						// Submit form
+						const res = await fetch(
+							"https://api.nodeauth.dev/api/forgot-password",
 							{
 								method: "POST",
 								body: JSON.stringify(values),
