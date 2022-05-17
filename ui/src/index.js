@@ -27,6 +27,9 @@ async function startApp() {
 			root: path.join(__dirname, "public"),
 		});
 
+		app.get("/2fa", {}, async (request, reply) => {
+			return reply.sendFile("2fa.html");
+		});
 		app.get(
 			"/reset/:email/:expiration/:token",
 			{},

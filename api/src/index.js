@@ -31,7 +31,11 @@ import { authorizeUser } from "./accounts/authorize.js";
 import { logUserIn } from "./accounts/logUserIn.js";
 import { logUserOut } from "./accounts/logUserOut.js";
 
-import { getUserFromCookies, changePassword } from "./accounts/user.js";
+import {
+	getUserFromCookies,
+	changePassword,
+	register2FA,
+} from "./accounts/user.js";
 
 // Testing Email
 import { sendEmail, mailInit } from "./mail/index.js";
@@ -42,6 +46,8 @@ import {
 } from "./accounts/verify.js";
 
 import { createResetLink, validateResetEmail } from "./accounts/reset.js";
+
+import { authenticator } from "@otplib/preset-default";
 
 // "Constants / Middleware"
 // "ESM-specific syntax requirements for accessing static files"
@@ -73,6 +79,19 @@ async function startApp() {
 			root: path.join(__dirname, "public"),
 		});
 
+		app.get("/api/user", {}, async (request, reply) => {
+			// "Get current user"
+			const user = await getUserFromCookies(request, reply);
+			if (user) {
+				return reply.send({
+					data: {
+						user,
+					},
+				});
+			}
+			reply.send({});
+		});
+
 		// "Routes"
 		app.get("/test", {}, async (request, reply) => {
 			try {
@@ -92,6 +111,39 @@ async function startApp() {
 			} catch (e) {
 				throw new Error(e);
 			}
+		});
+
+		app.post("/api/2fa-register", {}, async (request, reply) => {
+			// "Verify user login"
+			const user = await getUserFromCookies(request, reply);
+			const { token, secret } = request.body;
+			console.log("2FA REGISTER token, secret", token, secret);
+			const isValid = authenticator.verify({ token, secret });
+			console.log("2fa-register (api) isValid", isValid);
+			if (user._id && isValid) {
+				await register2FA(user._id, secret);
+				reply.send("success 2fa register");
+			}
+			reply.code(401).send();
+		});
+
+		app.post("/api/2fa-verify", {}, async (request, reply) => {
+			const { token, email, password } = request.body;
+
+			const { isAuthorized, userId, authenticatorSecret } =
+				await authorizeUser(email, password);
+
+			console.log("2FA VERIFY token, secret", token, secret);
+			const isValid = authenticator.verify({
+				token,
+				secret: authenticatorSecret,
+			});
+			console.log("2fa-verify (api) isValid", isValid);
+			if (userId && isValid && isAuthorized) {
+				await logUserIn(userId, request, reply);
+				reply.send("success 2fa verified");
+			}
+			reply.code(401).send();
 		});
 
 		app.post("/api/register", {}, async (request, reply) => {
@@ -146,12 +198,21 @@ async function startApp() {
 					"password:",
 					request.body.password
 				);
-				const { isAuthorized, userId } = await authorizeUser(
-					request.body.email,
-					request.body.password
-				);
+				const { isAuthorized, userId, authenticatorSecret } =
+					await authorizeUser(
+						request.body.email,
+						request.body.password
+					);
 
-				if (isAuthorized) {
+				console.log(
+					"api/authorize, isAuthorized, userId, authenticatorSecret:",
+					isAuthorized,
+					", ",
+					userId,
+					", ",
+					authenticatorSecret
+				);
+				if (isAuthorized && !authenticatorSecret) {
 					await logUserIn(userId, request, reply);
 					return reply.code(200).send({
 						data: {
@@ -165,6 +226,12 @@ async function startApp() {
 					// 		userId,
 					// 	},
 					// });
+				} else if (isAuthorized && authenticatorSecret) {
+					return reply.send({
+						data: {
+							status: "2FA",
+						},
+					});
 				}
 				return reply.code(401).send({
 					data: {

@@ -124,3 +124,24 @@ export async function changePassword(userId, newPassword) {
 		console.error(e);
 	}
 }
+
+export async function register2FA(userId, secret) {
+	try {
+		// "Get 'user' collection (from database)"
+		const { user } = await import("../user/user.js");
+
+		// Update User PW
+		return user.updateOne(
+			{
+				_id: userId,
+			},
+			{
+				$set: {
+					authenticator: secret,
+				},
+			}
+		);
+	} catch (e) {
+		console.error(e);
+	}
+}

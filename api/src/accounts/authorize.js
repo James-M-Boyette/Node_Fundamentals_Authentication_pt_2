@@ -20,10 +20,18 @@ export async function authorizeUser(email, password) {
 		const isAuthorized = await compare(password, savedPassword);
 		console.log("isAuthorized", isAuthorized);
 		// "Return boolean of 'if' for pw"
-		return { isAuthorized, userId: userData._id };
+		return {
+			isAuthorized,
+			userId: userData._id,
+			authenticatorSecret: userData.authenticator,
+		};
 	} else {
 		console.log("email & pw:", email, password);
 		console.log("User does not exist ...");
-		return "";
+		return {
+			isAuthorized: false,
+			userId: null,
+			authenticatorSecret: null,
+		};
 	}
 }
